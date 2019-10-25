@@ -9,7 +9,9 @@
     {
         const VIEW_FILES_DIR = '/views/',
               LAYOUT_FILE_NAME = '/app.html',
-              ALREADY_EXISTS_CODE = '23000';
+              ALREADY_EXISTS_CODE = '23000',
+              SEARCHTYPE_NAME = 'name',
+              SEARCHTYPE_NUMBER = 'number';
 
         private $_view;
         private $_model;
@@ -29,9 +31,10 @@
             echo file_get_contents($this->_view);
         }
 
-        public function numbersList()
+        public function contactsList($page)
         {
-            $this->_sendJsonResponse($this->_model->getAll());
+            $pageNum = $page ?: 1;
+            $this->_sendJsonResponse($this->_model->getAll($pageNum));
         }
 
         public function create($params)
@@ -90,6 +93,21 @@
                 $this->_sendJsonResponse(array('message' => 'Contact data updated successfully'),200);
             } catch (\Exception $e) {
                 $this->_sendJsonResponse(array('message' => "Fetching the contact failed with message: {$e->getMessage()}"),500);
+            }
+        }
+
+        public function search($params, $page)
+        {
+            if (!isset($params['type']) || !isset($params['value']) || empty($params['type'])) {
+                $this->_sendJsonResponse(array('message' => 'Not enough data for search.'), 400);
+            }
+
+            try {
+                $pageNum = $page ?: 1;
+                $value = $params['type'] == self::SEARCHTYPE_NUMBER ? preg_replace("#\s#", "", $params['value']): $params['value'];
+                $this->_sendJsonResponse($this->_model->search($params['type'],$value, $pageNum),200);
+            } catch (\Exception $e) {
+                $this->_sendJsonResponse(array('message' => "Searching the contact failed with message: {$e->getMessage()}"),500);
             }
         }
 

@@ -14,31 +14,26 @@
             $this->_db = $this->getConn();
         }
 
-        public function validate($params)
-        {
-            return true;
-        }
-
-        public function getAll()
+        public function getAll($page)
         {
             try {
-                $contacts = $this->_db->contact->select()->run();
+                $query = $this->_db->contact->select()
+                    ->page($page)
+                    ->perPage(10);
+
+                $contacts = $query->run();
+                $pagination = $query->getPageInfo();
             } catch (\Exception $e) {
                 return array(
                     "message" => "Error while getting all contacts: {$e->getMessage()}"
                 );
             }
 
-            $compact = array();
+            $compact = array(
+                'pagination' => $pagination
+            );
 
-            foreach ($contacts as $contact) {
-                $compact[$contact->id] = array(
-                    'name' => $contact->name,
-                    'number' => $contact->number
-                );
-            }
-
-            return $compact;
+            return array_merge($compact,$this->_compact($contacts));
         }
 
         public function getOne($id)
@@ -64,7 +59,7 @@
 
             $contact = $this->_db->contact->create(array(
                 'name' => $params['name'],
-                'number' => $params['number']
+                'number' => preg_replace("#\s#","",$params['number'])
             ));
 
             $contact->save();
@@ -88,5 +83,31 @@
         public function delete($id)
         {
             $this->_db->contact->delete()->where('id = ', $id)->run();
+        }
+
+        public function search($type, $value, $page)
+        {
+            $query = $this->_db->contact->select()->where($type . ' like ', '%' . $value . '%')->page($page)->perPage(10);
+            $found = $query->run();
+
+            $compact = array(
+                'pagination' => $query->getPageInfo()
+            );
+
+            return array_merge($compact,$this->_compact($found));
+        }
+
+        protected function _compact($elements)
+        {
+            $compact = array();
+
+            foreach ($elements as $element) {
+                $compact['contacts'][$element->id] = array(
+                    'name' => $element->name,
+                    'number' => $element->number
+                );
+            }
+
+            return $compact;
         }
     }

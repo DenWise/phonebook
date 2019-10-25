@@ -17,8 +17,8 @@
     });
 
     // Returns contact list
-    $router->respond('GET', '/list', function () use ($app) {
-        $app->numbersList();
+    $router->respond('GET', '/list?/[i:page]?', function ($request) use ($app) {
+        $app->contactsList($request->page);
     });
 
     // Returns single contact data
@@ -39,6 +39,11 @@
     // Edit contact data
     $router->respond('POST', '/contact/[i:id]', function ($request) use ($app) {
         $app->edit($request->id,$request->params());
+    });
+
+    // Search contact by value
+    $router->respond('GET', '/search?/[i:page]?', function ($request) use ($app) {
+        $app->search($request->params(),$request->page);
     });
 
     $router->dispatch();
