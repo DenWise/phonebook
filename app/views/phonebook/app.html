@@ -16,31 +16,26 @@
     <h1>Phonebook <div class="plus"><i class="fas fa-plus"></i></div></h1>
     <input id="searchInput" type="text" placeholder="Search...">
 
-    <ul>
-        <li>
-            <span class="delete-btn"><i class="far fa-trash-alt"></i>
-            </span><span class="name">Steve</span>
-            <span class="number">+7 (999) 999-99-99</span>
-        </li>
-        <li>
-            <span class="delete-btn"><i class="far fa-trash-alt"></i>
-            </span><span class="name">John</span>
-            <span class="number">+7 (999) 999-99-99</span>
-        </li>
-        <li>
-            <span class="delete-btn"><i class="far fa-trash-alt"></i>
-            </span><span class="name">David</span>
-            <span class="number">+7 (999) 999-99-99</span>
-        </li>
+    <ul class="list">
     </ul>
-</div>>
-
-<!-- create/edit form -->
-<div class="popup centered">
-    <form action="" method="">
-    </form>
+    <div class="pagination">
+    </div>
 </div>
 
+<!-- create/edit form -->
+<div class="popup hide">
+    <p class="popup-title"></p>
+    <input type="hidden" id="form-url" name="form_url" value="">
+    <label for="name-input"></label>
+    <input type="text" id="name-input" name="name" placeholder="Contact name">
+    <label for="number-input"></label>
+    <input type="text" id="number-input" name="name" placeholder="Contact number">
+    <button class="popup-button"></button>
+</div>
+<div class="popup" id="notice"></div>
+<div id="popup-layout"></div>
+
+<script src="/js/lib/jquery-3.3.1.min.js"></script>
 <script src="/js/app.js"></script>
 </body>
 </html>

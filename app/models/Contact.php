@@ -19,7 +19,7 @@
             try {
                 $query = $this->_db->contact->select()
                     ->page($page)
-                    ->perPage(10);
+                    ->perPage(7);
 
                 $contacts = $query->run();
                 $pagination = $query->getPageInfo();
@@ -104,7 +104,7 @@
             foreach ($elements as $element) {
                 $compact['contacts'][$element->id] = array(
                     'name' => $element->name,
-                    'number' => $element->number
+                    'phone' => $element->number
                 );
             }
 
