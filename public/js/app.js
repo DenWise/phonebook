@@ -1,7 +1,6 @@
 
 function preventSymbolsInput(e,symbols) {
     let regex = new RegExp(symbols,"i");
-    console.log(regex);
     if (regex.test(e.key)) {
         e.preventDefault();
     }
@@ -9,23 +8,33 @@ function preventSymbolsInput(e,symbols) {
 
 const App = {
   init: function() {
-      this.noticePopup = $('#notice');
+      this.noticePopup = $('.popup#notice');
       this.layout = $('#popup-layout');
-      this.popup = $('.popup');
+      this.formPopup = $('.popup#form');
       this.popupTitle = $('.popup-title');
       this.popupButton = $('.popup-button');
       this.inputName = $('#name-input');
-      this.inputNumber = $('#number-input');
+      this.inputNumber = $('#phone-input');
       this.inputs = $('.popup input');
       this.url = $('#form-url');
 
-      this.showContacts();
+      this.showContacts('list', '/list');
   },
-  showContacts: function(page) {
-      let url = page ? '/list/' + page: '/list';
+  submitForm: function(url, name, phone) {
+    this.ajaxRequest(url,"POST",{'name': name, 'phone': phone}, function(data){
+        App.showNoticePopup(data.message);
+        App.showContacts('list', '/list');
+    });
+  },
+  showContacts: function(type, url, page) {
+      let container = $('#container');
+      container.data("pagination_url", url);
+      container.data("state", type);
+      let separator = type === 'list' ? '/' : type === 'search' ? '&page=': '/';
+      url = page ? url + separator + page: url;
       this.ajaxRequest(url,'GET', [], this.printList);
   },
-  printList: function(data) {
+  printList: function(data,xhr) {
       const ul = $('.list');
       ul.html('');
       $.each(data['contacts'],function (index, el) {
@@ -40,7 +49,6 @@ const App = {
       App.setPagination(data['pagination']);
   },
   setPagination: function(pagination) {
-      console.log(pagination);
     let showArrows = pagination.totalPages > 3,
         pageBlock = $('.pagination');
         pageBlock.html('');
@@ -75,7 +83,7 @@ const App = {
               success(data,xhr);
           },
           error: function(jqXHR, textStatus, errorThrown) {
-              this.showNoticePopup('Ошибка. Попробуйте позже.');
+              App.showNoticePopup('Ошибка. Попробуйте позже.');
               console.log('jqXHR:');
               console.log(jqXHR);
               console.log('textStatus:');
@@ -86,38 +94,40 @@ const App = {
       });
   },
   showNoticePopup: function (message) {
+      this.hidePopup();
       this.noticePopup.html('<p class="notice">'+message+'</p>');
       this.noticePopup.fadeIn(300);
-      this.layout.fadeIn(50);
+      this.layout.fadeIn(300);
+      setTimeout(this.hideNoticePopup,2000);
   },
   hideNoticePopup: function() {
-      this.noticePopup.fadeOut(300);
-      this.layout.fadeOut(300);
+      App.noticePopup.fadeOut(300);
+      App.layout.fadeOut(300);
   },
-  showPopup: function(action,title,button,name,number) {
+  showPopup: function(action,title,button,name,phone) {
       this.popupTitle.html(title);
       this.popupButton.html(button);
       this.url.val(action);
-      if (name && number) {
+      if (name && phone) {
           this.inputName.val(name);
-          this.inputNumber.val(number);
+          this.inputNumber.val(phone);
       }
-      this.popup.show();
+      this.formPopup.show();
       this.layout.show();
   },
   hidePopup: function () {
-      this.popup.hide();
+      this.formPopup.hide();
       this.layout.hide();
       this.popupTitle.html();
       this.popupButton.html();
       this.inputs.each(function (index,el) {
           el.value = '';
+          $(el).removeClass('error');
       })
   }
 };
 
 $(document).ready(function(){
-
     App.init();
 
     $('.plus').on('click',function (ev) {
@@ -158,20 +168,64 @@ $(document).ready(function(){
 
     $(document).on('click','.pagination-item', function (ev) {
         let page = $(this).data('page');
-        App.showContacts(page);
+        let state = $('#container').data('state');
+        let url = $('#container').data('pagination_url');
+        App.showContacts(state,url,page);
     });
 
     $(document).on('click','.arrow', function (ev) {
         let page = $(this).data('page');
-        App.showContacts(page);
+        let state = $('#container').data('state');
+        let url = $('#container').data('pagination_url');
+        App.showContacts(state,url,page);
     });
 
     $("input#name-input").keypress(function(e) {
-        preventSymbolsInput(e,'[^a-zA-Zа-яА-Я--]');
+        preventSymbolsInput(e,'[^a-zA-Zа-яА-Я--\s]');
     });
 
-    $("input#number-input").keypress(function(e) {
+    $("input#phone-input").keypress(function(e) {
         preventSymbolsInput(e,"[^0-9\(\)--]");
     });
 
+    $(document).on('click', '.popup input', function(ev){
+        $(this).removeClass('error');
+    });
+
+    $(document).on('click', '.popup-button', function(ev){
+        let popup = $('.popup'),
+            url = popup.find('#form-url').val() || null,
+            nameValue = popup.find('#name-input').val() || null,
+            phoneValue = popup.find('#phone-input').val() || null;
+
+        if (url && nameValue && phoneValue) {
+            App.submitForm(url,nameValue,phoneValue);
+        } else {
+            if (!nameValue) {
+                popup.find('#name-input').addClass('error');
+            }
+            if (!phoneValue) {
+                popup.find('#phone-input').addClass('error');
+            }
+        }
+    })
+
+    $('#searchInput').keypress(function(ev) {
+        if (ev.which === 13) {
+            let value = $(this).val(),
+                url = $(this).data('url'),
+                regExPhone = new RegExp(/[0-9]/i);
+
+            if (value) {
+                let type = regExPhone.test(value) ? 'number':'name';
+                if (type) {
+                    url = url + '?type=' + type + '&value=' + value;
+                    App.showContacts('search',url);
+                }
+            } else {
+                App.showContacts('list', '/list');
+            }
+
+        }
+    });
 });

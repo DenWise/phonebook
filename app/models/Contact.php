@@ -53,13 +53,13 @@
 
         public function create($params)
         {
-            if (!isset($params['name']) || !isset($params['number'])) {
+            if (!isset($params->name) || !isset($params->phone)) {
                 throw new \Exception("Not enough data to create a contact.");
             }
 
             $contact = $this->_db->contact->create(array(
-                'name' => $params['name'],
-                'number' => preg_replace("#\s#","",$params['number'])
+                'name' => $params->name,
+                'number' => preg_replace("#\s#","",$params->phone)
             ));
 
             $contact->save();
@@ -72,8 +72,8 @@
             $contact = $this->_db->contact[$id];
 
             if ($contact) {
-                if (isset($params['name'])) $contact->name = $params['name'];
-                if (isset($params['number'])) $contact->number = $params['number'];
+                if (isset($params->name)) $contact->name = $params->name;
+                if (isset($params->phone)) $contact->number = $params->phone;
                 $contact->save();
             } else {
                 throw new \Exception("Contact with such ID not found");
@@ -87,7 +87,7 @@
 
         public function search($type, $value, $page)
         {
-            $query = $this->_db->contact->select()->where($type . ' like ', '%' . $value . '%')->page($page)->perPage(10);
+            $query = $this->_db->contact->select()->where($type . ' like ', '%' . $value . '%')->page($page)->perPage(7);
             $found = $query->run();
 
             $compact = array(

@@ -12,10 +12,9 @@
 </head>
 <body>
 
-<div id="container">
+<div id="container" data-state="" data-pagination_url="">
     <h1>Phonebook <div class="plus"><i class="fas fa-plus"></i></div></h1>
-    <input id="searchInput" type="text" placeholder="Search...">
-
+    <input id="searchInput" type="text" placeholder="Search..." data-url="/search">
     <ul class="list">
     </ul>
     <div class="pagination">
@@ -23,13 +22,11 @@
 </div>
 
 <!-- create/edit form -->
-<div class="popup hide">
+<div class="popup" id="form">
     <p class="popup-title"></p>
     <input type="hidden" id="form-url" name="form_url" value="">
-    <label for="name-input"></label>
     <input type="text" id="name-input" name="name" placeholder="Contact name">
-    <label for="number-input"></label>
-    <input type="text" id="number-input" name="name" placeholder="Contact number">
+    <input type="text" id="phone-input" name="phone" placeholder="Contact phone">
     <button class="popup-button"></button>
 </div>
 <div class="popup" id="notice"></div>

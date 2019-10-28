@@ -11,7 +11,7 @@
               LAYOUT_FILE_NAME = '/app.html',
               ALREADY_EXISTS_CODE = '23000',
               SEARCHTYPE_NAME = 'name',
-              SEARCHTYPE_NUMBER = 'number';
+              SEARCHTYPE_PHONE = 'phone';
 
         private $_view;
         private $_model;
@@ -43,14 +43,14 @@
 
             try {
                 $id = $this->_model->create($params);
-                $response['message'] = 'New record has been created successfully!';
+                $response['message'] = 'New contact has been created successfully!';
                 $response['id'] = $id;
                 $this->_sendJsonResponse($response,201);
             } catch (\PDOException $e) {
                 if ($e->getCode() == self::ALREADY_EXISTS_CODE) {
-                    $this->_sendJsonResponse(array("message" => "Contact with this number has already exists."), 500);
+                    $this->_sendJsonResponse(array("message" => "Contact with this number has already exists."));
                 }
-                $this->_sendJsonResponse(array("message" => "Error while creating the contact: {$e->getMessage()}"), 500);
+                $this->_sendJsonResponse(array("message" => "Error while creating the contact: {$e->getMessage()}"));
             }
         }
 
@@ -104,7 +104,7 @@
 
             try {
                 $pageNum = $page ?: 1;
-                $value = $params['type'] == self::SEARCHTYPE_NUMBER ? preg_replace("#\s#", "", $params['value']): $params['value'];
+                $value = $params['type'] == self::SEARCHTYPE_PHONE ? preg_replace("#\s#", "", $params['value']): $params['value'];
                 $this->_sendJsonResponse($this->_model->search($params['type'],$value, $pageNum),200);
             } catch (\Exception $e) {
                 $this->_sendJsonResponse(array('message' => "Searching the contact failed with message: {$e->getMessage()}"),500);

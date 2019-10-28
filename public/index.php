@@ -28,7 +28,8 @@
 
     // Create new contact
     $router->respond('POST', '/contact', function ($request) use ($app) {
-        $app->create($request->params());
+        $params = json_decode(file_get_contents("php://input"));
+        $app->create($params);
     });
 
     // Delete single contact data
@@ -38,12 +39,14 @@
 
     // Edit contact data
     $router->respond('POST', '/contact/[i:id]', function ($request) use ($app) {
-        $app->edit($request->id,$request->params());
+        $params = json_decode(file_get_contents("php://input"));
+        $app->edit($request->id,$params);
     });
 
     // Search contact by value
-    $router->respond('GET', '/search?/[i:page]?', function ($request) use ($app) {
-        $app->search($request->params(),$request->page);
+    $router->respond('GET', '/search', function ($request) use ($app) {
+        $params = array('type' => $request->type, 'value' => $request->value);
+        $app->search($params,$request->page);
     });
 
     $router->dispatch();
